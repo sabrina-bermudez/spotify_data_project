@@ -1,0 +1,41 @@
+WITH ranked_tracks AS (
+  SELECT 
+    track_name AS name,
+    artists,
+    popularity,
+    ROW_NUMBER() OVER (PARTITION BY track_name ORDER BY popularity DESC) AS rn
+  FROM `mineral-parser-452114-s7.spotify_project.spotify_data`
+  WHERE track_genre IN ("latino", "latin", "reggaeton", "spanish")
+)
+
+SELECT name, artists, popularity
+FROM ranked_tracks
+WHERE rn = 1
+ORDER BY popularity DESC
+LIMIT 10;
+
+SELECT  
+  track_genre,
+  ROUND(AVG(popularity),2) AS avg_popularity
+FROM `mineral-parser-452114-s7.spotify_project.spotify_data` 
+GROUP BY track_genre
+ORDER BY avg_popularity DESC
+LIMIT 10;
+
+SELECT 
+  track_genre,
+  ROUND(AVG(duration_ms),2) AS duration,
+FROM `mineral-parser-452114-s7.spotify_project.spotify_data` 
+GROUP BY track_genre
+ORDER BY duration DESC
+LIMIT 10;
+
+SELECT 
+  ROUND(CORR(popularity, danceability),5) AS danceability_corr,
+  ROUND(CORR(popularity, energy),5) AS energy_corr,
+  ROUND(CORR(popularity, tempo),5) AS tempo_corr,
+  ROUND(CORR(popularity, valence),5) AS valence_corr,
+  ROUND(CORR(popularity, speechiness),5) AS speechiness_corr,
+  ROUND(CORR(popularity, instrumentalness),5) AS instrumentalness_corr,
+FROM `mineral-parser-452114-s7.spotify_project.spotify_data`
+WHERE LOWER(track_genre) IN ("latin", "latino", "reggaeton", "spanish");
